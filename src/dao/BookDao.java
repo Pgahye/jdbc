@@ -10,9 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jdbc.AuthorVo;
+import jdbc.BookVo;
 
-public class AuthorDao {
-
+public class BookDao {
+	
+	
 	private Connection getConnection() throws SQLException {
 
 		Connection conn = null;
@@ -27,6 +29,7 @@ public class AuthorDao {
 			String url = "jdbc:mysql://localhost:3306/dev?useUnicode=true&characterEncoding=utf8";
 			conn = DriverManager.getConnection(url, "dev", "dev");
 
+		
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			System.out.println("JDBC Driver을 찾을수 없습니다. ");
@@ -40,8 +43,8 @@ public class AuthorDao {
 		return conn;
 
 	}
-
-	public boolean insert(AuthorVo authorVo) {
+	
+	public boolean insert(BookVo BookVo) {
 
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -51,14 +54,16 @@ public class AuthorDao {
 
 			// 3. statement 준비
 
-			String sql = "insert into author values( null,? , ?)";
+			String sql = "insert into book values( null,? , ?, ?)";
 
 			pstmt = conn.prepareStatement(sql);
 
 			// 4. 바인딩
 
-			pstmt.setString(1, authorVo.getName());
-			pstmt.setString(2, authorVo.getBio());
+			pstmt.setString(1, BookVo.getTitle());
+			pstmt.setInt(2, BookVo.getPrice());
+			pstmt.setInt(3, BookVo.getAuthor_no());
+		
 
 			// 5. sql 실행
 
@@ -95,10 +100,10 @@ public class AuthorDao {
 		}
 
 	}
+	
+	public List<BookVo> getList() {
 
-	public List<AuthorVo> getList() {
-
-		List<AuthorVo> list = new ArrayList<AuthorVo>();
+		List<BookVo> list = new ArrayList<BookVo>();
 
 		Connection conn = null;
 		Statement stmt = null;
@@ -114,7 +119,7 @@ public class AuthorDao {
 
 			// 4. sql문 실행 ; 콜론 붙이지 않기
 
-			String sql = "select no, name, bio from author";
+			String sql = "select no, title, price, author_no from book";
 			rs = stmt.executeQuery(sql); // select 는executeQuery, insert ,
 											// updete 는 excuteupdate
 
@@ -123,15 +128,17 @@ public class AuthorDao {
 			while (rs.next()) {
 
 				Long no = rs.getLong(1);
-				String name = rs.getString(2);
-				String bio = rs.getString(3);
+				String title = rs.getString(2);
+				int price = rs.getInt(3);
+				int author_no = rs.getInt(4);
 
-				AuthorVo authorVo = new AuthorVo();
-				authorVo.setNo(no);
-				authorVo.setName(name);
-				authorVo.setBio(bio);
+				BookVo BookVo = new BookVo();
+				BookVo.setNo(no);
+				BookVo.setTitle(title);
+				BookVo.setPrice(price);
+				BookVo.setAuthor_no(author_no);
 
-				list.add(authorVo);
+				list.add(BookVo);
 
 			}
 
@@ -166,14 +173,13 @@ public class AuthorDao {
 		}
 
 	}
-
-	public AuthorVo get(Long no) {
+	public BookVo get(Long no) {
 
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 
-		AuthorVo authorVo = null;
+		BookVo BookVo = null;
 
 		try {
 			// 1. 드라이버 로딩
@@ -183,7 +189,7 @@ public class AuthorDao {
 
 			// 4. sql문 실행 ; 콜론 붙이지 않기
 
-			String sql = "select no, name, bio from author where no=?";
+			String sql = "select no, title, price, author_no from book where no=?";
 			pstmt = conn.prepareStatement(sql);// select 는executeQuery, insert ,
 												// updete 는 excuteupdate
 
@@ -193,16 +199,17 @@ public class AuthorDao {
 			// 5. fetch row를 하나씩 가져오기
 
 			while (rs.next()) {
+			
+				BookVo=new BookVo();
+				BookVo.setNo(rs.getLong(1));
+				BookVo.setTitle(rs.getString(2));
+				BookVo.setPrice(rs.getInt(3));
+				BookVo.setAuthor_no(rs.getInt(4));
 
-				authorVo = new AuthorVo();
-
-				authorVo.setNo(rs.getLong(1));
-				authorVo.setName(rs.getString(2));
-				authorVo.setBio(rs.getString(3));
 
 			}
 
-			return authorVo;
+			return BookVo;
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -216,15 +223,15 @@ public class AuthorDao {
 
 				if (rs != null) {
 					rs.close();
-					return authorVo;
+					return BookVo;
 				}
 				if (pstmt != null) {
 					pstmt.close();
-					return authorVo;
+					return BookVo;
 				}
 				if (conn != null) {
 					conn.close();
-					return authorVo;
+					return BookVo;
 				}
 
 			} catch (SQLException e) {
@@ -233,23 +240,16 @@ public class AuthorDao {
 			}
 
 		}
-		return authorVo;
+		return BookVo;
 
 	}
-
-	public AuthorVo get(String name) {
-
-		return null;
-
-	}
-
 	public boolean delete(Long no) {
 
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 
-		AuthorVo authorVo = null;
+		BookVo BookVo = null;
 
 		try {
 			// 1. 드라이버 로딩
@@ -257,7 +257,7 @@ public class AuthorDao {
 
 			// 3. statement 생성(확장성 용이)
 
-			String sql = "delete from author where no=?";
+			String sql = "delete from book where no=?";
 			pstmt = conn.prepareStatement(sql);// select 는executeQuery, insert ,
 												// updete 는 excuteupdate
 
@@ -300,7 +300,7 @@ public class AuthorDao {
 
 	}
 
-	public boolean update(AuthorVo authorVo) {
+	public boolean update(BookVo BookVo) {
 
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -314,13 +314,14 @@ public class AuthorDao {
 
 			// 4. sql문 실행 ; 콜론 붙이지 않기
 
-			String sql = "update author set name=?, bio=? where no=?";
+			String sql = "update book set title=?, price=?, author_no=? where no=?";
 			pstmt = conn.prepareStatement(sql);// select 는executeQuery, insert ,
 												// updete 는 excuteupdate
 
-			pstmt.setString(1, authorVo.getName());
-			pstmt.setString(2, authorVo.getBio());
-			pstmt.setLong(3, authorVo.getNo());
+			pstmt.setString(1, BookVo.getTitle());
+			pstmt.setInt(2, BookVo.getPrice());
+			pstmt.setInt(3, BookVo.getAuthor_no());
+			pstmt.setLong(4, BookVo.getNo());
 			// 5. fetch row를 하나씩 가져오기
 
 			int count = pstmt.executeUpdate(); // select 는executeQuery,
